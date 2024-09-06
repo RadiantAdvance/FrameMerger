@@ -1,0 +1,9 @@
+{
+    "MP4 (H.264)": "ffmpeg -i input -c:v libx264 -preset fast -crf 22 output.mp4",
+    "MOV (H.264)": "ffmpeg -i input -c:v libx264 -preset fast -crf 22 output.mov",
+    "AVI (XVID)": "ffmpeg -i input -c:v libxvid -qscale:v 2 output.avi",
+    "WMV (Windows Media Video)": "ffmpeg -i input -c:v wmv2 -b:v 1M output.wmv",
+    "FLV (Flash Video)": "ffmpeg -i input -c:v flv1 -qscale:v 1 output.flv",
+    "ProRes 422 MOV": "ffmpeg -i input -c:v prores_ks -profile:v 3 -vendor apl0 -bits_per_mb 8000 -pix_fmt yuv422p10le output.mov",
+    "Lossless MOV with Alpha": "ffmpeg -i input -c:v prores_ks -profile:v 4444 -qscale 0 -pix_fmt yuva444p10le output.mov"
+}
