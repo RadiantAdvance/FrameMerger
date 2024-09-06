@@ -12,8 +12,12 @@ class VideoConverterApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Image to Video Converter")
-        self.preset_file = 'Version2/presets.json'
-        self.framerate_preset_file = 'Version2/framerate_presets.json'
+        
+        # Set the app icon for the window and taskbar
+        self.set_window_icon('icon.png')
+
+        self.preset_file = 'presets.json'
+        self.framerate_preset_file = 'framerate_presets.json'
         self.codec_presets = self.load_presets(self.preset_file)
         self.framerate_presets = self.load_presets(self.framerate_preset_file)
 
@@ -29,6 +33,12 @@ class VideoConverterApp:
         self.create_widgets()
         self.update_codec_dropdown()
         self.update_framerate_dropdown()
+
+    def set_window_icon(self, icon_path):
+        """Sets the window and taskbar icon."""
+        icon = tk.PhotoImage(file=icon_path)
+        self.root.iconphoto(True, icon)
+
 
     def create_styles(self):
         style = ttk.Style()
