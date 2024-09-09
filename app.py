@@ -7,17 +7,18 @@ import os
 import json
 import subprocess
 import threading
+import sys
 
 class VideoConverterApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Image to Video Converter")
+        self.root.title("FrameMerger")
         
-        # Set the app icon for the window and taskbar
-        self.set_window_icon('icon.png')
-
-        self.preset_file = 'presets.json'
-        self.framerate_preset_file = 'framerate_presets.json'
+        # Adjust file paths for PyInstaller and normal execution
+        self.preset_file = self.resource_path('presets.json')
+        self.framerate_preset_file = self.resource_path('framerate_presets.json')
+        
+        # Load the presets
         self.codec_presets = self.load_presets(self.preset_file)
         self.framerate_presets = self.load_presets(self.framerate_preset_file)
 
@@ -34,11 +35,13 @@ class VideoConverterApp:
         self.update_codec_dropdown()
         self.update_framerate_dropdown()
 
-    def set_window_icon(self, icon_path):
-        """Sets the window and taskbar icon."""
-        icon = tk.PhotoImage(file=icon_path)
-        self.root.iconphoto(True, icon)
-
+    def resource_path(self, relative_path):
+        """ Get absolute path to resource, works for PyInstaller and during development """
+        try:
+            base_path = sys._MEIPASS  # This is where PyInstaller extracts files
+        except AttributeError:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
 
     def create_styles(self):
         style = ttk.Style()
@@ -78,7 +81,8 @@ class VideoConverterApp:
         messagebox.showinfo("Success", "Video created successfully!")
 
     def get_sorted_images(self, folder):
-        images = [img for img in os.listdir(folder) if img.endswith((".png", ".jpg", ".jpeg"))]
+        # Now supporting PNG, JPG, JPEG, TGA, and TIFF
+        images = [img for img in os.listdir(folder) if img.lower().endswith((".png", ".jpg", ".jpeg", ".tga", ".tiff"))]
         images.sort()
         return images
 
@@ -98,7 +102,8 @@ class VideoConverterApp:
         video.release()
 
     def select_image_file(self):
-        file_selected = filedialog.askopenfilename(filetypes=[("Image files", "*.png;*.jpg;*.jpeg")])
+        # Now supporting PNG, JPG, JPEG, TGA, and TIFF in the file dialog
+        file_selected = filedialog.askopenfilename(filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.tga;*.tiff")])
         if file_selected:
             folder_selected = os.path.dirname(file_selected)
             self.image_folder_var.set(folder_selected)
@@ -124,22 +129,9 @@ class VideoConverterApp:
             self.progress_var.set(0)
             return
 
-        output_file = self.ensure_correct_extension(output_folder, output_filename, ffmpeg_command)
+        output_file = os.path.join(output_folder, output_filename)
 
         self.convert_images_to_video(image_folder, output_file, frame_rate, ffmpeg_command)
-
-    def ensure_correct_extension(self, output_folder, output_filename, ffmpeg_command):
-        ext = self.extract_extension(ffmpeg_command)
-        if not output_filename.lower().endswith(ext.lower()):
-            output_filename = os.path.splitext(output_filename)[0] + ext
-        return os.path.join(output_folder, output_filename)
-
-    def extract_extension(self, ffmpeg_command):
-        ext_start = ffmpeg_command.rfind('.') + 1
-        ext = '.' + ffmpeg_command[ext_start:].strip().split(' ')[0]
-        if ext:
-            return ext
-        return '.mp4'
 
     def open_settings(self):
         settings_window = ttk.Toplevel(self.root)
@@ -183,13 +175,9 @@ class VideoConverterApp:
 
     def set_codec(self, value):
         self.codec_var.set(value)
-        ffmpeg_command = self.codec_presets.get(value, "")
-        ext = self.extract_extension(ffmpeg_command)
-        output_filename = self.output_filename_var.get()
-        if output_filename and not output_filename.lower().endswith(ext):
-            self.output_filename_var.set(os.path.splitext(output_filename)[0] + ext)
 
     def create_widgets(self):
+        # Create menu
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
 
